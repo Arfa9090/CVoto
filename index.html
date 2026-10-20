@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generator CV Siswa SMK Otomatis</title>
+  
+  <!-- SEO & Favicon -->
+  <meta name="description" content="Platform pembuat CV otomatis untuk siswa SMK siap kerja & PKL. Fitur live preview dan download CV PDF ATS-friendly tanpa persentase.">
+  
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome CDN untuk icon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- File CSS Terpisah -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ==========================================
+       HEADER & NAVIGATION BAR (NO PRINT)
+       ========================================== -->
+  <header class="app-header no-print">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">
+            <span>CVoto</span>
+            <span class="badge-tag">SMK PKL</span>
+          </div>
+          <span class="brand-subtitle">Pembuat CV Siswa Otomatis</span>
+        </div>
+      </div>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <!-- Preset Jurusan Cepat (RPL, MPLB, AKL) -->
+        <div class="preset-dropdown-wrap">
+          <span class="preset-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Contoh Jurusan:</span>
+          <select id="presetSelect" class="preset-select" onchange="loadPreset(this.value)">
+            <option value="rpl">Siswa RPL (Software / Web)</option>
+            <option value="mplb">Siswa MPLB (Manajemen Perkantoran)</option>
+            <option value="akl">Siswa AKL (Akuntansi & Keuangan)</option>
+          </select>
+        </div>
+
+        <!-- Tombol Download CV PDF Utama -->
+        <button type="button" class="btn btn-primary" onclick="downloadCVPdf()">
+          <i class="fa-solid fa-file-pdf"></i>
+          <span>Download CV (PDF)</span>
+        </button>
+
+        <!-- Tombol Reset Form -->
+        <button type="button" class="btn btn-outline" onclick="resetForm()">
+          <i class="fa-solid fa-rotate-left"></i>
+          <span>Reset</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       MAIN APP CONTAINER (SPLIT VIEW)
+       ========================================== -->
+  <main class="app-main">
+    
+    <!-- ==========================================
+         PANEL KIRI: FORMULIR INPUT OTOMATIS (NO PRINT)
+         ========================================== -->
+    <aside class="form-panel no-print" id="formPanel">
+      <div class="panel-header">
+        <div class="panel-title-wrap">
+          <i class="fa-solid fa-sliders"></i>
+          <h2>Input & Sesuaikan Data CV</h2>
+        </div>
+        <span class="live-indicator">
+          <span class="dot"></span> Live Preview Aktif
+        </span>
+      </div>
+
+      <form id="cvForm" onsubmit="event.preventDefault();" class="form-body">
+
+        <!-- 1. FOTO PROFIL -->
+        <section class="form-section">
+          <div class="section-title">
+            <i class="fa-solid fa-camera"></i>
+            <h3>1. Foto Profil Formal</h3>
+          </div>
+          <div class="photo-upload-box">
+            <div class="photo-preview-thumbnail" id="formPhotoThumb">
+              <img id="formPhotoImg" src="" alt="Thumbnail Foto">
+            </div>
+            <div class="photo-inputs">
+              <label class="btn-file-upload">
+                <i class="fa-solid fa-upload"></i> Unggah Foto dari Komputer / HP
+                <input type="file" id="inputPhotoFile" accept="image/*" onchange="handleFileUpload(event)">
+              </label>
+              <div class="or-divider"><span>atau masukkan URL</span></div>
+              <input type="url" id="inputPhotoUrl" class="form-control" placeholder="https://contoh.com/foto.jpg" oninput="handlePhotoUrl(this.value)">
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. DATA DIRI & KONTAK CEPAT -->
+        <section class="form-section">
+          <div class="section-title">
+            <i class="fa-solid fa-id-card"></i>
+            <h3>2. Data Diri & Kontak Cepat</h3>
+          </div>
+          
+          <div class="form-group">
+            <label for="inputFullName">Nama Lengkap Siswa <span class="req">*</span></label>
+            <input type="text" id="inputFullName" class="form-control" placeholder="Contoh: Muhammad Rizky Pratama" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="inputMajor">Jurusan / Program Keahlian <span class="req">*</span></label>
+              <input type="text" id="inputMajor" class="form-control" placeholder="Contoh: Rekayasa Perangkat Lunak (PPLG)" required>
+            </div>
+            <div class="form-group">
+              <label for="inputSchool">Nama Asal SMK <span class="req">*</span></label>
+              <input type="text" id="inputSchool" class="form-control" placeholder="Contoh: SMK Negeri 4 Bandung" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="inputPhone"><i class="fa-solid fa-phone"></i> Nomor HP / WhatsApp <span class="req">*</span></label>
+              <input type="text" id="inputPhone" class="form-control" placeholder="+62 812-3456-7890" required>
+            </div>
+            <div class="form-group">
+              <label for="inputEmail"><i class="fa-solid fa-envelope"></i> Email Aktif <span class="req">*</span></label>
+              <input type="email" id="inputEmail" class="form-control" placeholder="siswa@email.com" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="inputLocation"><i class="fa-solid fa-location-dot"></i> Alamat / Domisili</label>
+              <input type="text" id="inputLocation" class="form-control" placeholder="Bandung, Jawa Barat">
+            </div>
+            <div class="form-group">
+              <label for="inputLinkedin"><i class="fa-brands fa-linkedin"></i> LinkedIn / Profil Web</label>
+              <input type="text" id="inputLinkedin" class="form-control" placeholder="linkedin.com/in/username">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="inputGithub"><i class="fa-brands fa-github"></i> Portofolio / GitHub / Tautan Digital</label>
+            <input type="text" id="inputGithub" class="form-control" placeholder="github.com/username atau portofolio link">
+          </div>
+        </section>
+
+        <!-- 3. RIWAYAT PENDIDIKAN (SD HINGGA SMK) -->
+        <section class="form-section">
+          <div class="section-title">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <h3>3. Riwayat Pendidikan (SD hingga SMK)</h3>
+          </div>
+          
+          <!-- Jenjang SMK -->
+          <div class="edu-block">
+            <span class="edu-block-badge">1. Jenjang SMK (Sekolah Menengah Kejuruan)</span>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nama SMK:</label>
+                <input type="text" id="inputSmkName" class="form-control" placeholder="Contoh: SMK Negeri 4 Bandung">
+              </div>
+              <div class="form-group">
+                <label>Tahun:</label>
+                <input type="text" id="inputSmkYear" class="form-control" placeholder="Contoh: 2024 – 2027">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Jurusan / Konsentrasi Keahlian:</label>
+              <input type="text" id="inputSmkMajor" class="form-control" placeholder="Contoh: Rekayasa Perangkat Lunak">
+            </div>
+          </div>
+
+          <!-- Jenjang SMP -->
+          <div class="edu-block mt-3">
+            <span class="edu-block-badge">2. Jenjang SMP (Sekolah Menengah Pertama)</span>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nama SMP:</label>
+                <input type="text" id="inputSmpName" class="form-control" placeholder="Contoh: SMP Negeri 2 Bandung">
+              </div>
+              <div class="form-group">
+                <label>Tahun:</label>
+                <input type="text" id="inputSmpYear" class="form-control" placeholder="Contoh: 2021 – 2024">
+              </div>
+            </div>
+          </div>
+
+          <!-- Jenjang SD -->
+          <div class="edu-block mt-3">
+            <span class="edu-block-badge">3. Jenjang SD (Sekolah Dasar)</span>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nama SD:</label>
+                <input type="text" id="inputSdName" class="form-control" placeholder="Contoh: SD Negeri 1 Pajajaran Bandung">
+              </div>
+              <div class="form-group">
+                <label>Tahun:</label>
+                <input type="text" id="inputSdYear" class="form-control" placeholder="Contoh: 2015 – 2021">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. TENTANG SAYA (BIO / RINGKASAN PROFIL) -->
+        <section class="form-section">
+          <div class="section-title">
+            <i class="fa-solid fa-user-pen"></i>
+            <h3>4. Tentang Saya (Ringkasan Profil)</h3>
+          </div>
+          <div class="form-group">
+            <label for="inputBio">Bio Singkat (Maksimal 3-4 kalimat berbobot untuk industri)</label>
+            <textarea id="inputBio" rows="4" class="form-control" placeholder="Tuliskan fokus keahlian, minat karir, dan motivasi mengikuti program PKL..."></textarea>
+            <span class="hint-text">💡 Tips: Tuliskan spesialisasi utama Anda dan komitmen belajar di tempat magang.</span>
+          </div>
+        </section>
+
+        <!-- 5. PENGALAMAN PROYEK & ORGANISASI -->
+        <section class="form-section">
+          <div class="section-title-between">
+            <div class="section-title">
+              <i class="fa-solid fa-briefcase"></i>
+              <h3>5. Pengalaman Proyek & Organisasi</h3>
+            </div>
+            <button type="button" class="btn-sm btn-outline" onclick="addExperienceField()">
+              <i class="fa-solid fa-plus"></i> Tambah Pengalaman
+            </button>
+          </div>
+          <div id="dynamicExperienceContainer" class="dynamic-list">
+            <!-- Dynamic Form Items via script.js -->
+          </div>
+        </section>
+
+        <!-- 6. KEAHLIAN (TANPA PERSENTASE) -->
+        <section class="form-section">
+          <div class="section-title">
+            <i class="fa-solid fa-bolt"></i>
+            <h3>6. Keahlian (Skills)</h3>
+          </div>
+          <p class="section-desc">Keahlian ditampilkan dalam bentuk label / badges profesional tanpa angka persentase sesuai standar CV industri.</p>
+
+          <!-- Keahlian Teknis (Hard Skills) -->
+          <div class="sub-form-block mt-3">
+            <div class="section-title-between">
+              <label class="sub-label"><i class="fa-solid fa-code"></i> Keahlian Teknis (Hard Skills)</label>
+              <button type="button" class="btn-sm btn-outline" onclick="addHardSkillField()">
+                <i class="fa-solid fa-plus"></i> Tambah Keahlian Teknis
+              </button>
+            </div>
+            <div id="dynamicHardSkillContainer" class="dynamic-list">
+              <!-- Dynamic Form Items via script.js -->
+            </div>
+          </div>
+
+          <!-- Keahlian Interpersonal (Soft Skills) -->
+          <div class="sub-form-block mt-4">
+            <div class="section-title-between">
+              <label class="sub-label"><i class="fa-solid fa-heart-pulse"></i> Keahlian Sikap Kerja (Soft Skills)</label>
+              <button type="button" class="btn-sm btn-outline" onclick="addSoftSkillField()">
+                <i class="fa-solid fa-plus"></i> Tambah Soft Skill
+              </button>
+            </div>
+            <div id="dynamicSoftSkillContainer" class="dynamic-list">
+              <!-- Dynamic Form Items via script.js -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. ACHIEVEMENTS / PRESTASI & SERTIFIKAT (DENGAN LINK URL / UPLOAD) -->
+        <section class="form-section">
+          <div class="section-title-between">
+            <div class="section-title">
+              <i class="fa-solid fa-award"></i>
+              <h3>7. Achievements / Sertifikat (Dengan Link URL & Upload)</h3>
+            </div>
+            <button type="button" class="btn-sm btn-outline" onclick="addAchievementField()">
+              <i class="fa-solid fa-plus"></i> Tambah Sertifikat
+            </button>
+          </div>
+          <p class="section-desc">Kode sertifikat telah diganti dengan tautan URL atau berkas bukti sertifikat yang bisa diunggah dan langsung dapat diklik oleh HRD.</p>
+          <div id="dynamicAchievementContainer" class="dynamic-list mt-3">
+            <!-- Dynamic Form Items via script.js -->
+          </div>
+        </section>
+
+        <!-- TOMBOL DOWNLOAD BAWAH FORM -->
+        <div class="form-submit-box">
+          <button type="button" class="btn btn-primary btn-block" onclick="downloadCVPdf()">
+            <i class="fa-solid fa-file-pdf"></i>
+            <span>Download Hasil CV (Format PDF Siap Cetak A4)</span>
+          </button>
+          <p class="submit-note">Diformat rapi standar HRD industri & ATS-friendly.</p>
+        </div>
+
+      </form>
+    </aside>
+
+
+    <!-- ==========================================
+         PANEL KANAN: LIVE PREVIEW DOKUMEN CV (PRINTABLE)
+         ========================================== -->
+    <section class="preview-panel" id="previewPanel">
+      
+      <!-- Preview Header Controls (No Print) -->
+      <div class="preview-toolbar no-print">
+        <div class="preview-status">
+          <i class="fa-solid fa-file-lines text-primary"></i>
+          <span>Pratinjau Lembar CV (Standar A4 ATS-Friendly)</span>
+        </div>
+        <div class="preview-actions">
+          <button type="button" class="btn-sm btn-secondary" onclick="window.print()">
+            <i class="fa-solid fa-print"></i> Cetak / Print
+          </button>
+          <button type="button" class="btn-sm btn-primary" onclick="downloadCVPdf()">
+            <i class="fa-solid fa-file-arrow-down"></i> Unduh PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- KERTAS CV DOKUMEN CETAK A4 (DIMENSI A4 STANDAR) -->
+      <div class="cv-paper" id="cvPaper">
+        
+        <!-- HEADER CV: FOTO LEBIH KE KIRI, IDENTITAS & KONTAK DI SEBELAH KANAN FOTO -->
+        <div class="cv-header">
+          <div class="cv-header-photo">
+            <img id="cvPhoto" src="" alt="Foto Formal Siswa">
+          </div>
+          <div class="cv-header-info">
+            <div class="cv-title-group">
+              <h1 id="cvFullName" class="cv-name">Muhammad Rizky Pratama</h1>
+              <p id="cvMajor" class="cv-major">Siswa Rekayasa Perangkat Lunak (PPLG)</p>
+              <p id="cvSchool" class="cv-school">SMK Negeri 4 Bandung</p>
+            </div>
+
+            <!-- KONTAK LENGKAP DI SEBELAH KANAN FOTO -->
+            <div class="cv-contacts-grid">
+              <div class="cv-contact-item">
+                <i class="fa-solid fa-phone"></i>
+                <span id="cvPhone">+62 812-3456-7890</span>
+              </div>
+              <div class="cv-contact-item">
+                <i class="fa-solid fa-envelope"></i>
+                <span id="cvEmail">rizky.smk4@email.com</span>
+              </div>
+              <div class="cv-contact-item">
+                <i class="fa-solid fa-location-dot"></i>
+                <span id="cvLocation">Bandung, Jawa Barat</span>
+              </div>
+              <div class="cv-contact-item" id="cvLinkedinWrap">
+                <i class="fa-brands fa-linkedin"></i>
+                <span id="cvLinkedin">linkedin.com/in/rizky-smk</span>
+              </div>
+              <div class="cv-contact-item" id="cvGithubWrap">
+                <i class="fa-brands fa-github"></i>
+                <span id="cvGithub">github.com/rizky-smk</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TENTANG SAYA -->
+        <div class="cv-section" id="cvSectionBio">
+          <h2 class="cv-section-title">
+            <i class="fa-solid fa-user"></i>
+            <span>Tentang Saya</span>
+          </h2>
+          <p id="cvBio" class="cv-bio-text">
+            Siswa tingkat akhir kejuruan Rekayasa Perangkat Lunak dengan spesialisasi pengembangan web responsif dan integrasi database modern. Terbiasa menyelesaikan proyek kolaboratif berbasis standar industri menggunakan Git dan metodologi Agile mini. Siap mendedikasikan kedisiplinan dan keterampilan teknis untuk memberikan kontribusi nyata dalam program Praktek Kerja Lapangan (PKL).
+          </p>
+        </div>
+
+        <!-- LAYOUT 2 KOLOM CV: KIRI (PENDIDIKAN, KEAHLIAN & SOFT SKILLS) & KANAN (PENGALAMAN & ACHIEVEMENTS) -->
+        <div class="cv-grid-columns">
+          
+          <!-- KOLOM KIRI (PENDIDIKAN SD - SMK & KEAHLIAN) -->
+          <div class="cv-col-left">
+            
+            <!-- 1. RIWAYAT PENDIDIKAN (SD HINGGA SMK) -->
+            <div class="cv-section" id="cvSectionEducation">
+              <h2 class="cv-section-title">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>Riwayat Pendidikan</span>
+              </h2>
+              <div class="cv-edu-list">
+                
+                <!-- SMK -->
+                <div class="cv-edu-item">
+                  <div class="cv-edu-header">
+                    <span class="cv-edu-level">SMK</span>
+                    <span class="cv-edu-year" id="cvSmkYear">2024 – 2027</span>
+                  </div>
+                  <div class="cv-edu-school" id="cvSmkName">SMK Negeri 4 Bandung</div>
+                  <div class="cv-edu-major" id="cvSmkMajor">Rekayasa Perangkat Lunak</div>
+                </div>
+
+                <!-- SMP -->
+                <div class="cv-edu-item">
+                  <div class="cv-edu-header">
+                    <span class="cv-edu-level">SMP</span>
+                    <span class="cv-edu-year" id="cvSmpYear">2021 – 2024</span>
+                  </div>
+                  <div class="cv-edu-school" id="cvSmpName">SMP Negeri 2 Bandung</div>
+                </div>
+
+                <!-- SD -->
+                <div class="cv-edu-item">
+                  <div class="cv-edu-header">
+                    <span class="cv-edu-level">SD</span>
+                    <span class="cv-edu-year" id="cvSdYear">2015 – 2021</span>
+                  </div>
+                  <div class="cv-edu-school" id="cvSdName">SD Negeri 1 Pajajaran Bandung</div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- 2. KEAHLIAN TEKNIS (HARD SKILLS) TANPA PERSENTASE -->
+            <div class="cv-section" id="cvSectionHardSkills">
+              <h2 class="cv-section-title">
+                <i class="fa-solid fa-code"></i>
+                <span>Keahlian Teknis</span>
+              </h2>
+              <div id="cvHardSkillsList" class="cv-skills-badges">
+                <!-- Diisi otomatis via JS tanpa persentase -->
+              </div>
+            </div>
+
+            <!-- 3. SOFT SKILLS TANPA PERSENTASE -->
+            <div class="cv-section" id="cvSectionSoftSkills">
+              <h2 class="cv-section-title">
+                <i class="fa-solid fa-heart-circle-check"></i>
+                <span>Soft Skills</span>
+              </h2>
+              <div id="cvSoftSkillsList" class="cv-softskills-grid">
+                <!-- Diisi otomatis via JS -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- KOLOM KANAN (PENGALAMAN PROYEK & ACHIEVEMENTS DENGAN LINK) -->
+          <div class="cv-col-right">
+            
+            <!-- 4. PENGALAMAN PROYEK & ORGANISASI -->
+            <div class="cv-section" id="cvSectionExperiences">
+              <h2 class="cv-section-title">
+                <i class="fa-solid fa-briefcase"></i>
+                <span>Pengalaman Proyek & Organisasi</span>
+              </h2>
+              <div id="cvExperiencesList" class="cv-timeline">
+                <!-- Diisi otomatis via JS -->
+              </div>
+            </div>
+
+            <!-- 5. ACHIEVEMENTS / PRESTASI (DENGAN TAUTAN URL SERTIFIKAT) -->
+            <div class="cv-section" id="cvSectionAchievements">
+              <h2 class="cv-section-title">
+                <i class="fa-solid fa-award"></i>
+                <span>Prestasi & Sertifikasi</span>
+              </h2>
+              <div id="cvAchievementsList" class="cv-achievements-list">
+                <!-- Diisi otomatis via JS dengan URL link yang bisa diklik -->
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- FOOTER RESMI CV DOKUMEN -->
+        <div class="cv-footer">
+          <p>Dokumen CV Resmi Siswa SMK untuk Program Praktek Kerja Lapangan (PKL)</p>
+          <span class="cv-generated-tag">Dibuat otomatis melalui Platform CVoto SMK</span>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- TOAST FEEDBACK NOTIFIKASI -->
+  <div id="toast" class="toast">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="toastMsg">Pesan tersimpan</span>
+  </div>
+
+  <!-- File JavaScript Terpisah -->
+  <script src="script.js"></script>
+</body>
+</html>
